@@ -1,4 +1,4 @@
-FROM mcr.micsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY GolfingApplication.sln ./
 COPY GolfingAppUI/GolfingAppUI.csproj GolfingAppUI/
@@ -7,7 +7,7 @@ RUN dotnet restore GolfingApplication.sln
 COPY . ./
 RUN dotnet publish GolfingApplication.sln -c Release -o /app/publish
 
-FROM mcr.micsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 80

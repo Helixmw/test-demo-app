@@ -7,7 +7,7 @@ RUN dotnet restore GolfingApplication.sln
 COPY . ./
 RUN dotnet publish GolfingApplication.sln -c Release -o /app/publish
 
-FROM mcr.micsoft.com/dotnet/aspnet:8.0-jammy AS runtime
+FROM mcr.micsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 80

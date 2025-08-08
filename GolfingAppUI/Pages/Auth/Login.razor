@@ -1,0 +1,137 @@
+@page "/Login"
+@using GolfingAppUI.Models
+@using GolfingDataAccessLib.Authentication
+@using GolfingDataAccessLib.DTOs.User
+@using GolfingDataAccessLib.Exceptions
+@using GolfingDataAccessLib.Logic.Auth
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Claims
+@inject IUserProcessor userProcessor
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject CustomAuthenticationStateProvider customAuthProvider
+@inject IJSRuntime js
+
+@layout Shared.MainLayout
+<div class="register">
+<div class="box left">
+        <div class="title">
+            Welcome Back To
+        </div>
+    </div>
+  <div class="box right">
+    <div class="sm-title">Login</div>   
+<EditForm Model="@user" OnValidSubmit="LoginUserAsync">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <div class="form-group">
+        <div class="label">Email</div>
+    <InputText class="form-control" @bind-Value="user.Email"/> 
+    </div>
+     <div class="form-group">
+        <div class="label">Password</div>
+    <InputText type="password" class="form-control" @bind-Value="user.Password"/> 
+    </div>
+    <button type="submit" class="form-button">Login</button>
+</EditForm>
+  </div>
+  </div>
+
+<style scoped>
+    .register{display: grid;
+    margin:6rem 3rem;
+    grid-template-columns: repeat(2,1fr)}
+    .heading{
+   }
+    .container-1{
+        margin-top:5rem;}
+    .title{
+        font-family:var(--h1);
+        font-size: var(--xl);
+        color:var(primary);
+         max-width:30rem;
+         color:var(--primary);
+    }
+
+    .title::after{
+        content: ' World Of Golfing!';
+        color:var(--blue2);
+    }
+
+    /*Form*/
+
+    .sm-title{
+        font-family: var(--h2);
+        color:var(--primary);
+        font-size:1.8rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .label{
+  font-family:var(--h3);
+  font-size:1rem;
+}
+
+.form-control{
+  font-size:1rem;
+  width:15rem;
+  border:1px solid black;
+  border-radius:4px;
+}
+
+.form-button{
+  border:0px;
+  background-color: var(--primary);
+  color:white;
+  font-family: var(--h3);
+  font-size:1.4rem;
+  padding:0.3rem 0.6rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+    /*----*/
+</style>
+
+
+
+
+
+@code{
+private LoginUser user { get; set; } = new();
+
+private string ErrorMessage { get; set; } = string.Empty;
+
+    private async Task LoginUserAsync(){
+        try{
+        if(user is not null){
+            var _user = await userProcessor.LoginAsync(new LoginDTO{
+                                                            Email = user.Email,
+                                                            Password = user.Password,
+                                                        },string.Empty);
+                    try{
+
+                    await customAuthProvider.AuthenticateUser(new UserInfo{
+                        UserName = _user.UserName,
+                        Email = _user.Email,
+                        Role = _user.Role
+                    });
+                    navigationManager.NavigateTo("/Home/Dashboard");
+                    }catch(Exception){
+                        await js.InvokeVoidAsync("alert","An error occured while trying to login");
+                    }
+                   
+                
+        }
+        }catch(AuthorizationException ex){
+            await ShowErrorMessage(ex.Message);
+        }
+
+    }
+
+    private async Task ShowErrorMessage(string message){
+        await js.InvokeVoidAsync("alert", message);    
+    }
+}    

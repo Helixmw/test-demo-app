@@ -1,0 +1,29 @@
+﻿@page "/"
+@using GolfingDataAccessLib.Authentication
+@inject CustomAuthenticationStateProvider auth
+@inject NavigationManager navManager
+
+<div class="container-1 hero">
+    <div class="HeroSection">
+        <div class="heading">
+            World of Golfing
+        </div>
+        <div class="sub-heading">
+            We are excited for you to be a part of the Golfing Journey with us. Register now and start creating your fitting schedules.You can also check our Swing Analysis service.
+        </div>
+        <NavLink href="/Register" class="link-button">Register Now</NavLink>
+    </div>
+</div>
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await auth.GetAuthenticationStateAsync();
+        if(state != null && state.User.Identity.IsAuthenticated)
+        {
+          
+         navManager.NavigateTo("/Home/Dashboard");
+        }
+        
+    }
+}

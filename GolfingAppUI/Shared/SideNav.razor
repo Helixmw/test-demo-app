@@ -1,0 +1,61 @@
+@namespace GolfingAppUI.Shared
+@using GolfingAppUI.Helpers
+@using GolfingDataAccessLib.Authentication
+@inject CustomAuthenticationStateProvider auth
+@using Microsoft.AspNetCore.Components.Authorization
+<div class="side-nav">
+    <div class="side-nav-links">
+      
+          <NavLink href="/Home/Dashboard" class="side-nav-link">Home</NavLink>
+          @if(role == "Admin")
+          {
+              <NavLink href="Admin/AllCustomers" class="side-nav-link">All Customers</NavLink>
+              <NavLink href="Admin/CustomerFittings" class="side-nav-link">Customer Fittings</NavLink>
+              <NavLink href="/Admin/Settings" class="side-nav-link">Settings</NavLink>
+          }else{
+          <NavLink href="Home/Fitting/Create" class="side-nav-link">Schedule Fitting</NavLink>
+          <NavLink href="Home/SwingAnalysis" class="side-nav-link">Swing Analysis</NavLink>
+          <NavLink href="Home/Fitting/All" class="side-nav-link">All Fittings</NavLink>
+          }
+          
+          <NavLink href="Home/Profile" class="side-nav-link">Edit Profile</NavLink>
+  
+    </div>
+</div>
+<style scoped>
+    .side-nav{
+      background-color: var(--blue2);
+      height: 100vh;
+      padding-left:3rem;
+      padding-top:2rem;
+    }
+      .side-nav-links{display: grid;
+          grid-template-columns: 1fr;
+          row-gap: 1rem;
+      }
+
+      .side-nav-link{
+        color:white;
+        font-family: var(--h3);
+        font-size: var(--sm);
+        text-decoration:none;
+      }
+
+    
+</style>
+@code{
+
+  private string role { get; set; }
+   protected override async Task OnInitializedAsync()
+      {
+          var state = await auth.GetAuthenticationStateAsync();
+          if(state != null && state.User.Identity.IsAuthenticated)
+          {
+       
+            role = state.User.Claims.FirstOrDefault(c => c.Type == "Role")?.Value;
+
+          
+          }
+          
+      }
+}

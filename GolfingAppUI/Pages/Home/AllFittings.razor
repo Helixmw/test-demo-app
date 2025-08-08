@@ -1,0 +1,170 @@
+@page "/Home/Fitting/All"
+@using GolfingAppUI.Helpers
+@using GolfingAppUI.Models
+@using GolfingDataAccessLib.DTOs.User
+@using GolfingDataAccessLib.Logic
+@using GolfingDataAccessLib.Utilities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using GolfingDataAccessLib.Authentication
+@inject IFittingProcessor fittingProcessor
+@inject NavigationManager navigationManager
+@inject CustomAuthenticationStateProvider auth
+@inject IJSRuntime js
+@attribute [Authorize]
+@layout Shared.UserLayout
+
+<div class="welcome">
+    <div class="dash-heading">All Fittings</div>
+    <div class="tag" style=" color:rgb(84, 84, 84);">View all your scheduled fittings</div>
+
+    @if(fittings.Count == 0){
+    <div class="error-section">
+        <div class="message">You currently don't have any fitting schedules</div>
+        <center><NavLink href="/Home/Fitting/Create" class="message-link">Create New</NavLink></center>
+    </div>
+    }else{
+
+    @* <table id="myTable" class="display" style="margin-top:1rem;"> *@
+    <table id="myTable" class="display">
+        <tr>
+            <th>Available Date</th>
+            <th>Available Time</th>
+            <th>Comment</th>
+            <th></th>
+            <th></th>
+        </tr>
+    @foreach (var fitting in fittings){
+
+                <tr>
+                    <td style="min-width:10rem;">@fitting.AvailableDate.ToString("dd, MMM yyyy")</td>
+                    <td style="min-width:10rem;">@fitting.AvailableTime</td>
+                    <td style="min-width:20rem;">@fitting.Comment</td>
+                    <td><button class="btn btn-primary" @onclick="() => EditSchedule(fitting.ScheduleId)">Update</button></td>
+                    <td><button class="btn btn-danger" @onclick="() => DeleteSchedule(fitting.ScheduleId)" >Delete</button></td>
+                </tr>
+    }
+    </table>
+    }
+
+        
+    
+</div>
+<style scoped>
+    .welcome{margin:3rem;}
+    .dash-heading{
+        font-family: var(--h2);
+    color:var(--primary);
+     font-size:var(--lg);}
+    .tag{font-family: var(--h3);
+    font-size:var(--sm);
+    margin-bottom:1.2rem;
+    color:var(--primary);
+    }
+
+    .error-section{
+        display:flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-top:3rem;
+    }
+
+    .message{
+        font-family:var(--h1);
+        color:rgb(161, 161, 161);
+        font-size:var(--md);
+        text-align: center;
+        margin-bottom:1.3rem;
+    }
+
+    .message-link{
+       
+        background-color:var(--primary);
+        color:white;
+        font-family: var(--h3);
+        padding:0.5rem 0.8rem;
+        font-size:var(--md);
+        border-radius: 4px;
+        text-decoration: none;
+        text-align: center;
+        width:8rem;
+    }
+
+    th{text-align:left;}
+    th, td{
+        font-family: var(--h3);
+        
+    }
+
+    td{
+        font-size: 0.9rem;
+    }
+
+
+    .btn{
+        border:0px;
+        padding:0.4rem 0.8rem;
+        border-radius:0.5rem;
+        font-family: var(--h3);
+        color:white;
+    } 
+
+    .btn-primary{background-color:var(--primary);}
+    .btn-danger{background-color:red;}  
+</style> 
+@code{
+ 
+    private string? userName { get;set; }
+
+    private string? role { get; set; }
+    private string? email { get; set; }
+
+
+    private List<GolfingDataAccessLib.Models.FittingSchedule>? fittings = new();
+
+    protected override async Task OnInitializedAsync()
+        {
+
+            var state = await auth.GetAuthenticationStateAsync();
+            if(state != null && state.User.Identity.IsAuthenticated)
+            {
+            userName = state.User.Claims.FirstOrDefault(c => c.Type == "UserName")?.Value;
+            role = state.User.Claims.FirstOrDefault(c => c.Type == "Role")?.Value;
+            email = state.User.Claims.FirstOrDefault(c => c.Type == "Email")?.Value;
+
+          
+
+            
+            var getUser = new GetUserDTO{
+                Email = email,
+                UserName = userName,
+                Role = role,
+            };
+            fittings = await fittingProcessor.ListFittingSchedulesAsync(new ListParameters(), getUser);
+            
+        }
+    }
+
+   private void EditSchedule(Guid scheduleId){
+        var id = scheduleId.ToString();
+        navigationManager.NavigateTo($"/Home/Fitting/Edit?id={id}");
+   }
+
+    private async Task DeleteSchedule(Guid scheduleId){
+         var getUser = new GetUserDTO{
+                Email = email,
+                UserName = userName,
+                Role = role,
+            };
+       var res = await fittingProcessor.DeleteFittingScheduleAsync(scheduleId, getUser);
+       
+       if(res is true){
+       var fit = fittings.Where(x => x.ScheduleId == scheduleId).FirstOrDefault();
+       
+       if(fit is not null)
+       fittings.Remove(fit);
+       }
+   }
+
+}

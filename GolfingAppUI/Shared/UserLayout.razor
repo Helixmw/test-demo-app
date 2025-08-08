@@ -1,0 +1,41 @@
+@inherits LayoutComponentBase
+
+@inject NavigationManager navManager
+
+<div class="dashboard">
+    <div class="top-nav">
+        <Navbar/>
+    </div>
+    <div class="left-nav">
+        <SideNav/>
+    </div>
+    <div class="dash-body">
+        @Body
+    </div>
+</div>
+<style scoped>
+    .dashboard{
+        display: grid;
+        height:100vh;
+        grid-template-columns: repeat(5,1fr);
+    }
+    .top-nav{
+        grid-column: 1/6;
+        
+    }
+    .left-nav{
+        grid-column: 1/2;
+        
+            
+    }
+    .dash-body{
+        grid-column: 2/6;
+        
+        overflow-y: auto;
+    }
+</style>
+@code{
+
+}
+
+

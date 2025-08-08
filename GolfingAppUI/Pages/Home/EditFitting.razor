@@ -1,0 +1,190 @@
+@page "/Home/Fitting/Edit"
+@using GolfingAppUI.Models
+@using GolfingDataAccessLib.DTOs.User
+@using Microsoft.AspNetCore.Authorization
+@using GolfingDataAccessLib.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@using GolfingDataAccessLib.Logic
+@inject IFittingProcessor _fittingProcessor
+@inject CustomAuthenticationStateProvider auth
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+@layout Shared.UserLayout
+
+ <div class="welcome">
+    <div class="dash-heading">Edit Fitting Schedule</div>
+    <div class="tag"  style="color:rgb(84, 84, 84);">Make changes to schedule details</div>
+@if(showErroMessage){
+    <div class="error-section">
+        <div class="message">Unable to load specified schedule</div>
+        <center><NavLink href="/Home/Fitting/All" class="message-link">Back To List</NavLink></center>
+    </div>
+}
+else
+{
+<EditForm Model="@fittingSchedule" OnValidSubmit="EditFittingAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label class="label" for="avaliableDate">Available Date*</label>
+        <InputDate id="avaliableDate" class="form-control input" @bind-Value="fittingSchedule.AvailableDate" />
+    </div>
+
+    <div class="form-group">
+        <label class="label" for="availableTime">Available Time*</label>
+      <input type="time" id="availableTime" class="form-control input" @bind-value="fittingSchedule.AvailableTime" />
+    </div>
+    <div class="form-group">
+        <label class="label" for="comment">Comments</label>
+        <InputTextArea id="comment" placeholder="Write a comment..." class="form-control text-area" @bind-Value="fittingSchedule.Comment" />
+    </div>
+
+    <button type="submit" class="form-button">Save Changes</button>
+</EditForm>
+}
+</div>
+<style scoped>
+    .welcome{margin:3rem;}
+    .dash-heading{
+        font-family: var(--h2);
+        color:var(--primary);
+        font-size:var(--lg);
+        }
+    .tag{
+        font-family: var(--h3);
+        font-size:var(--sm);
+        color:var(--primary);
+        }
+
+.error-section{
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top:3rem;
+}
+
+
+
+.message{
+  font-family:var(--h1);
+  color:rgb(161, 161, 161);
+  font-size:var(--md);
+  text-align: center;
+  margin-bottom:1.3rem;
+}
+
+.message-link{
+ 
+  background-color:var(--primary);
+  color:white;
+  font-family: var(--h3);
+  padding:0.5rem 0.8rem;
+  font-size:var(--md);
+  border-radius: 4px;
+  text-decoration: none;
+  text-align: center;
+  width:8rem;
+}
+    /**FORM**/
+    
+.label{
+  font-family:var(--h3);
+  font-size:1rem;
+  margin-bottom: 0.3rem;}
+
+.form-control{
+  width:20rem;
+  border:1px solid black;
+  border-radius:4px;
+  font-family:var(--h3);
+}
+
+.form-group{display: flex;
+  flex-direction: column; 
+  font-family: var(--h3);
+  font-size:1.2rem;
+  padding:0.3rem 0.6rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.form-button{
+  background:var(--primary);
+  color:white;
+  font-size:1rem;
+  font-family: var(--h3);
+  padding:0.2rem 0.5rem;
+  border:0px;
+  margin-left:0.5rem;
+  border-radius:4px;
+}
+
+    /*----*/
+</style>
+@code{
+
+    private string value { get; set; }
+    public string Id { get; set; }
+     private FittingSchedule fittingSchedule {get; set;} = new();
+      public string? userName {get;set;}
+      public string? email {get;set;}
+      public string? role {get;set;}
+
+      public string? errorMessage { get; set; }
+
+
+      public bool showErroMessage {get;set; } = false;
+
+      private GetUserDTO userDTO { get;set; } = new(); 
+     protected override async Task OnInitializedAsync()
+      {
+          var state = await auth.GetAuthenticationStateAsync();
+          if(state != null && state.User.Identity.IsAuthenticated)
+          {
+            try{
+
+            userName = state.User.Claims.FirstOrDefault(c => c.Type == "UserName")?.Value;
+            role = state.User.Claims.FirstOrDefault(c => c.Type == "Role")?.Value;
+            email = state.User.Claims.FirstOrDefault(c => c.Type == "Email")?.Value;
+            
+            userDTO.UserName = userName;
+            userDTO.Email = email;
+            userDTO.Role = role;
+
+            var uri = new Uri(navigationManager.Uri);
+            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+            Id = query.TryGetValue("id", out var valueFromQuery) ? valueFromQuery : "Default Value";
+
+            var id = Guid.Parse(Id ?? string.Empty);
+            var res = await _fittingProcessor.GetFittingScheduleByIdAsync(id,userDTO);
+
+            if(res is not null){
+                fittingSchedule.AvailableDate = res.AvailableDate;
+                fittingSchedule.AvailableTime = TimeOnly.Parse(res.AvailableTime);
+                fittingSchedule.Comment = res.Comment;
+            }
+            }catch(Exception e){
+                errorMessage = e.Message;
+                showErroMessage = true;
+            }
+           
+          
+          
+          }
+          
+      }
+
+      public async Task EditFittingAsync(){
+        var sch = new GolfingDataAccessLib.Models.FittingSchedule{
+            AvailableDate = fittingSchedule.AvailableDate,
+            AvailableTime = fittingSchedule.AvailableTime.ToString(),
+            Comment = fittingSchedule.Comment,
+            ScheduleId = Guid.Parse(Id)
+        };
+        await _fittingProcessor.EditFittingScheduleAsync(sch,userDTO);
+        navigationManager.NavigateTo("/Home/Fitting/All");
+      }
+
+  
+}

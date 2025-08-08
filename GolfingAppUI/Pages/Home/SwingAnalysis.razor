@@ -1,0 +1,114 @@
+@page "/Home/SwingAnalysis"
+@using GolfingAppUI.Models
+@using Microsoft.AspNetCore.Authorization
+@using GolfingDataAccessLib.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@inject CustomAuthenticationStateProvider auth
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+@layout Shared.UserLayout
+
+ <div class="welcome">
+    <div class="dash-heading">Swing Analysis</div>
+    <div class="tag"  style=" color:rgb(84, 84, 84);">Schedule a new swing analysis</div>
+
+<EditForm Model="@fittingSchedule" OnValidSubmit="AddSwingAnalysisSchedule">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label class="label" for="avaliableDate">Available Date*</label>
+        <InputDate id="avaliableDate" class="form-control input" @bind-Value="fittingSchedule.AvailableDate" />
+    </div>
+
+    <div class="form-group">
+        <label class="label" for="availableTime">Available Time*</label>
+      <input type="time" id="availableTime" class="form-control input" @bind-value="fittingSchedule.AvailableTime" />
+    </div>
+    <div class="form-group">
+        <label class="label" for="comment">Comments</label>
+        <InputTextArea id="comment" placeholder="Write a comment..." class="form-control text-area" @bind-Value="fittingSchedule.Comment" />
+    </div>
+
+    <button type="submit" class="form-button">Create Schedule</button>
+</EditForm>
+</div>
+<style scoped>
+    .welcome{margin:3rem;}
+    .dash-heading{
+        font-family: var(--h2);
+        color:var(--primary);
+        font-size:var(--lg);
+        }
+    .tag{
+        font-family: var(--h3);
+        font-size:var(--sm);
+        color:var(--primary);
+        }
+    /**FORM**/
+    
+.label{
+  font-family:var(--h3);
+  font-size:1rem;
+  margin-bottom: 0.3rem;}
+
+.form-control{
+  width:20rem;
+  border:1px solid black;
+  border-radius:4px;
+  font-family:var(--h3);
+}
+
+.form-group{display: flex;
+  flex-direction: column; 
+  font-family: var(--h3);
+  font-size:1.2rem;
+  padding:0.3rem 0.6rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.form-button{
+  background:var(--primary);
+  color:white;
+  font-size:1rem;
+  font-family: var(--h3);
+  padding:0.2rem 0.5rem;
+  border:0px;
+  margin-left:0.5rem;
+  border-radius:4px;
+}
+
+    /*----*/
+</style>
+@code{
+
+     private SwingAnalysisSchedule fittingSchedule {get; set;} = new();
+      public string? userName {get;set;}
+      public string? email {get;set;}
+      public string? role {get;set;}
+     protected override async Task OnInitializedAsync()
+      {
+          var state = await auth.GetAuthenticationStateAsync();
+          if(state != null && state.User.Identity.IsAuthenticated)
+          {
+            userName = state.User.Claims.FirstOrDefault(c => c.Type == "UserName")?.Value;
+            role = state.User.Claims.FirstOrDefault(c => c.Type == "Role")?.Value;
+            email = state.User.Claims.FirstOrDefault(c => c.Type == "Email")?.Value;
+
+           // checkRole(email);
+          
+          }
+          
+      }
+
+      public void AddSwingAnalysisSchedule(){
+
+      }
+
+    private void checkRole(string role){
+        if(role != "Customer"){
+            navigationManager.NavigateTo("/Home/Dashboard");
+        }
+    }
+}

@@ -1,0 +1,36 @@
+@namespace GolfingAppUI.Shared
+@using GolfingDataAccessLib.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@inject CustomAuthenticationStateProvider auth
+@inject NavigationManager navigationManager
+
+<div class="nav">
+    <NavLink href="/" class="font-icon">Golfing</NavLink>
+    <div class="nav-links">
+        <AuthorizeView>
+            <Authorized>
+                  <a @onclick="Logout" class="nav-link">Logout</a>
+            </Authorized>
+            <NotAuthorized>
+                <NavLink href="/Register" class="nav-link">Register</NavLink>
+                <NavLink href="/Login" class="nav-link">Login</NavLink>
+            </NotAuthorized>
+        </AuthorizeView>
+       
+  
+    </div>
+</div>
+<style scoped>
+    .nav-link{cursor:pointer;}
+</style>
+
+@code{
+   
+   
+
+    private void Logout(){
+         auth.Logout();
+         navigationManager.NavigateTo("/");
+    }
+}    
+

@@ -1,0 +1,23 @@
+@page "/Home/Accessdenied"
+@using Microsoft.AspNetCore.Authorization
+@layout Shared.UserLayout
+<div class="welcome">
+    <div class="dash-heading">You Cannot View This Page</div>
+    <div class="tag"  style=" color:red;">Access Has Been Denied</div>
+</div>
+<style scoped>
+    .welcome{margin:3rem;}
+    .dash-heading{
+        font-family: var(--h2);
+        color:red;
+        font-size:var(--lg);
+        }
+    .tag{
+        font-family: var(--h3);
+        font-size:var(--sm);
+        color:red;
+    }
+</style>
+@code{
+
+} 

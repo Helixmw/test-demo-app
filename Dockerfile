@@ -5,7 +5,7 @@ COPY GolfingAppUI/GolfingAppUI.csproj GolfingAppUI/
 COPY GolfingDataAccessLib/GolfingDataAccessLib.csproj GolfingDataAccessLib/
 RUN dotnet restore NewGolfingApplication.sln
 COPY . ./
-RUN dotnet publish GolfingApplication.sln -c Release -o /app/publish
+RUN dotnet publish NewGolfingApplication.sln -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app

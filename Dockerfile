@@ -1,4 +1,4 @@
-FROM mcr.micsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.micsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY GolfingApplication.sln ./
 COPY GolfingAppUI/GolfingAppUI.csproj GolfingAppUI/

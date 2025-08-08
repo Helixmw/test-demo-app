@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY GolfingApplication.sln ./
+COPY NewGolfingApplication.sln ./
 COPY GolfingAppUI/GolfingAppUI.csproj GolfingAppUI/
 COPY GolfingDataAccessLib/GolfingDataAccessLib.csproj GolfingDataAccessLib/
-RUN dotnet restore GolfingApplication.sln
+RUN dotnet restore NewGolfingApplication.sln
 COPY . ./
 RUN dotnet publish GolfingApplication.sln -c Release -o /app/publish
 

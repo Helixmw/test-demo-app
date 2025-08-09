@@ -54,29 +54,12 @@ builder.Services.AddScoped<ISwingAnalysisScheduleService, SwingAnalysisScheduleS
 builder.Services.AddScoped<ISwingAnalysisProcessor, SwingAnalysisProcessor>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserProcessor, UserProcessor>();
-//builder.Services.AddScoped<SeedingService>();
 builder.Services.AddCascadingAuthenticationState();
 
 
 
 var app = builder.Build();
 
-//Scope created to start data seeding
-using(var scope = app.Services.CreateScope()){
-    var services = scope.ServiceProvider;
-    try{
-
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-         var configuration = services.GetRequiredService<IConfiguration>();
-        //Seed database
-        await Seeders.SeedRolesAndDefaultUser(roleManager, userManager, configuration);
-        
-    }catch(Exception ex)
-    {
-        throw new DatabaseOperationException($"Something went wrong starting up service. Please try again later: {ex.Message}");
-    }
-}
 
 if (!app.Environment.IsDevelopment())
 {
